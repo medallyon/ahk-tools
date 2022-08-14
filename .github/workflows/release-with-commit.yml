@@ -16,7 +16,7 @@ jobs:
           tag_name: "r$1"
           body: "$3"
           draft: false
-          prerelease: true
+          prerelease: false
         env:
           GITHUB_USER: "${{secrets.GITHUB_USER}}"
           GITHUB_TOKEN: "${{secrets.PAT}}"
