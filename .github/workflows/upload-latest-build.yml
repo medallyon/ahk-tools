@@ -1,0 +1,64 @@
+name: Upload Latest Build
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Building center-window
+      uses: nekocodeX/GitHub-Action-Ahk2Exe@main
+      with:
+        in: center-window/center-window.ahk
+
+    - name: Building open-downloads
+      uses: nekocodeX/GitHub-Action-Ahk2Exe@main
+      with:
+        in: open-downloads/open-downloads.ahk
+
+    - name: Building switch-output
+      uses: nekocodeX/GitHub-Action-Ahk2Exe@main
+      with:
+        in: switch-output/switch-output.ahk
+
+    # Use Copy-Item and Compress-Archive to create a zip
+    - name: Create Distribution Package
+      env:
+        Tag: ${{ github.ref_name }}
+      run: |
+        New-Item -ItemType Directory -Force -Path ".\dist\"
+
+        Copy-Item -Path ".\center-window\center-window.exe" -Destination ".\dist\center-window.exe" -Force
+        Copy-Item -Path ".\open-downloads\open-downloads.exe" -Destination ".\dist\open-downloads.exe" -Force
+        Copy-Item -Path ".\switch-output\switch-output.exe" -Destination ".\dist\switch-output.exe" -Force
+
+        $compress = @{
+          Path = ".\dist\"
+          CompressionLevel = "Fastest"
+          DestinationPath = ".\dist\ahk-tools-$env:Tag.zip"
+        }
+        Compress-Archive @compress
+
+    # Upload compressed package
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ahk-tools-v${{ github.ref_name }}
+        path: .\dist\*
+
+    # Upload the package zip to the release that triggered this workflow
+    - name: Upload Release Zip
+      uses: svenstaro/upload-release-action@2.3.0
+      with:
+        repo_token: ${{ secrets.PAT }}
+        tag: ${{ github.ref_name }}
+        file_glob: true
+        file: .\dist\*
