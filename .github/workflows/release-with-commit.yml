@@ -1,0 +1,22 @@
+name: Release with commit
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: ChanTsune/release-with-commit@v2.4.0
+        with:
+          regexp: "^Revision ([0-9]+)(?:[ \\t]*(.+)?\\s+((?:\\s|.+)(?:\\s|.+)+))?$"
+          regexp_options: "mgui"
+          release_name: "Revision $1"
+          tag_name: "r$1"
+          body: "$3"
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_USER: "${{secrets.GITHUB_USER}}"
+          GITHUB_TOKEN: "${{secrets.PAT}}"
