@@ -6,7 +6,7 @@ on:
       - master
 jobs:
   release:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: ChanTsune/release-with-commit@v2.4.0
         with:
